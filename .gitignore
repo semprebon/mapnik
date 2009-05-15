@@ -1,0 +1,15 @@
+*.pyc
+*.o
+*.a
+*.os
+*.so
+.sconsign.dblite
+bindings/python/mapnik/paths.py
+config.cache
+config.log
+config.py
+plugins/input/postgis/postgis.input
+plugins/input/raster/raster.input
+plugins/input/shape/shape.input
+utils/shapeindex/shapeindex
+
