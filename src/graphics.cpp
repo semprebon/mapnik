@@ -32,6 +32,26 @@
 
 namespace mapnik
 {
+#ifdef HAVE_CAIRO
+#ifdef HAVE_RSVG
+    SvgSymbol::SvgSymbol(int width,int height)
+        :width_(width), height_(height)
+        {
+            // todo set surface_
+        }
+    SvgSymbol::SvgSymbol(const SvgSymbol& rhs) 
+        :width_(rhs.width_),
+         height_(rhs.height_),
+         surface_(rhs.surface_) {}
+    
+    SvgSymbol::SvgSymbol(Cairo::RefPtr<Cairo::ImageSurface> rhs)
+        :width_(rhs->get_width()),
+         height_(rhs->get_height()),
+         surface_(rhs) {}
+    
+#endif
+#endif
+
     Image32::Image32(int width,int height)
         :width_(width),
          height_(height),

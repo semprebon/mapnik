@@ -148,6 +148,7 @@ opts.AddVariables(
     # Note: cairo, cairomm, and pycairo all optional but configured automatically through pkg-config
     # Therefore, we use a single boolean for whether to attempt to build cairo support.
     BoolVariable('CAIRO', 'Attempt to build with Cairo rendering support', 'True'),
+    BoolVariable('RSVG', 'Attempt to build with librsvg support (required for vector symbols)', 'True'),
     ('GDAL_CONFIG', 'The path to the gdal-config executable for finding gdal and ogr details.', 'gdal-config'),
     ('PG_CONFIG', 'The path to the pg_config executable.', 'pg_config'),
     PathVariable('OCCI_INCLUDES', 'Search path for OCCI include files', '/usr/lib/oracle/10.2.0.3/client/include', PathVariable.PathAccept),
@@ -460,6 +461,9 @@ if not preconfigured:
         color_print(4,'SCons USE_CONFIG specified as false, will not inherit variables python config file...')        
 
     conf = Configure(env, custom_tests = conf_tests)
+    print "yo"
+    print env
+    print conf_tests
     
     if env['DEBUG']:
         mode = 'debug mode'
@@ -551,6 +555,12 @@ if not preconfigured:
         env.Append(CXXFLAGS = '-DHAVE_CAIRO')
     else:
         env['SKIPPED_DEPS'].extend(['cairo','cairomm'])
+            
+    if env['RSVG'] and conf.CheckPKG('librsvg-2.0'):
+        env.ParseConfig('pkg-config --libs --cflags librsvg-2.0')
+        env.Append(CXXFLAGS = '-DHAVE_RSVG')
+    else:
+        env['SKIPPED_DEPS'].extend(['librsvg-2.0'])
 
     LIBSHEADERS = [
         ['m', 'math.h', True,'C'],

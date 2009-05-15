@@ -133,7 +133,32 @@ namespace mapnik
                 }
         };
    
-    class MAPNIK_DECL Image32
+    class ISymbol
+    {
+        public:
+            virtual ~ISymbol() {}
+            virtual unsigned width() const = 0;
+            virtual unsigned height() const = 0;
+    };
+    
+#ifdef HAVE_CAIRO
+#ifdef HAVE_RSVG
+    class MAPNIK_DECL SvgSymbol : ISymbol
+    {
+    private:
+        unsigned width_;
+        unsigned height_;
+        Cairo::RefPtr<Cairo::ImageSurface> surface_;
+    public:
+        SvgSymbol(int width,int height);
+        SvgSymbol(SvgSymbol const& rhs);
+        SvgSymbol(Cairo::RefPtr<Cairo::ImageSurface> rhs);
+    };
+#endif
+#endif
+   
+// TODO craigds maybe rename to RasterSymbol?
+    class MAPNIK_DECL Image32 : ISymbol
     {
     private:
         unsigned width_;
