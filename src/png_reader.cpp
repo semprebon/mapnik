@@ -46,7 +46,9 @@ namespace mapnik
         ~PngReader();
         unsigned width() const;
         unsigned height() const;
-        void read(unsigned x,unsigned y,ImageData32& image);	
+        boost::shared_ptr<ISymbol> init_symbol(unsigned w, unsigned h) const;
+        boost::shared_ptr<ISymbol> init_symbol() const;
+        void read(unsigned x,unsigned y,ISymbol& image);
     private:
         PngReader(const PngReader&);	
         PngReader& operator=(const PngReader&);
@@ -144,8 +146,21 @@ namespace mapnik
         return height_;
     }
     
-    void PngReader::read(unsigned x0, unsigned y0,ImageData32& image) 
+    boost::shared_ptr<ISymbol> PngReader::init_symbol(unsigned w, unsigned h) const
     {
+        return boost::shared_ptr<ISymbol>(new Image32(w, h));
+    }
+    
+    boost::shared_ptr<ISymbol> PngReader::init_symbol() const
+    {
+        return boost::shared_ptr<ISymbol>(new Image32(width_, height_));
+    }
+    
+    void PngReader::read(unsigned x0, unsigned y0,ISymbol& symbol)
+    {
+        Image32& image = static_cast<Image32&>(symbol);
+        ImageData32& image_data = image.data();
+        
         FILE *fp=fopen(fileName_.c_str(),"rb");
         if (!fp) throw ImageReaderException("cannot open image file "+fileName_);
 
@@ -191,8 +206,8 @@ namespace mapnik
         png_read_update_info(png_ptr, info_ptr);
 
         //START read image rows
-        unsigned w=std::min((unsigned)image.width(),width_);
-        unsigned h=std::min((unsigned)image.height(),height_);
+        unsigned w=std::min((unsigned)image_data.width(),width_);
+        unsigned h=std::min((unsigned)image_data.height(),height_);
 
         unsigned rowbytes=png_get_rowbytes(png_ptr, info_ptr);
         unsigned char* row= new unsigned char[rowbytes];
@@ -201,7 +216,7 @@ namespace mapnik
             png_read_row(png_ptr,row,0);
             if (i>=y0 && i<h) 
             {
-                image.setRow(i-y0,(unsigned*) &row[x0],w);
+                image_data.setRow(i-y0,(unsigned*) &row[x0],w);
             } 
         }
         //END

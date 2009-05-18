@@ -727,7 +727,9 @@ namespace mapnik
                                      Feature const& feature,
                                      proj_transform const& prj_trans)
    {
-      boost::shared_ptr<ImageData32> const& data = sym.get_image();
+      boost::shared_ptr<ISymbol> symbol = boost::const_pointer_cast<ISymbol>(sym.get_image());
+      // TODO CRAIG : use vector symbol rather than rasterizing
+      ImageData32 *data = const_cast<ImageData32*>(&(symbol->rasterize()));
 
       if ( data )
       {
@@ -771,7 +773,10 @@ namespace mapnik
       typedef coord_transform2<CoordTransform,geometry2d> path_type;
 
       UnicodeString text = feature[sym.get_name()].to_unicode();
-      boost::shared_ptr<ImageData32> const& data = sym.get_image();
+      
+      boost::shared_ptr<ISymbol> symbol = boost::const_pointer_cast<ISymbol>(sym.get_image());
+      // TODO use vector symbol rather than rasterizing
+      ImageData32 *data = const_cast<ImageData32*>(&(symbol->rasterize()));
 
       if (text.length() > 0 && data)
       {
@@ -875,12 +880,15 @@ namespace mapnik
    {
       typedef coord_transform2<CoordTransform,geometry2d> path_type;
 
-      boost::shared_ptr<ImageData32> const& image = sym.get_image();
-      unsigned width(image->width());
-      unsigned height(image->height());
+      boost::shared_ptr<ISymbol> symbol = boost::const_pointer_cast<ISymbol>(sym.get_image());
+      // TODO use vector symbol rather than rasterizing
+      ImageData32 *data = const_cast<ImageData32*>(&(symbol->rasterize()));
+      
+      unsigned width(data->width());
+      unsigned height(data->height());
 
       cairo_context context(context_);
-      cairo_pattern pattern(*image);
+      cairo_pattern pattern(*data);
 
       pattern.set_extend(Cairo::EXTEND_REPEAT);
       pattern.set_filter(Cairo::FILTER_BILINEAR);
@@ -942,7 +950,10 @@ namespace mapnik
       typedef coord_transform2<CoordTransform,geometry2d> path_type;
 
       cairo_context context(context_);
-      cairo_pattern pattern(*sym.get_image());
+      
+      boost::shared_ptr<ISymbol> symbol = boost::const_pointer_cast<ISymbol>(sym.get_image());
+      // TODO use vector symbol rather than rasterizing
+      cairo_pattern pattern(symbol->rasterize());
       pattern.set_extend(Cairo::EXTEND_REPEAT);
 
       context.set_pattern(pattern);

@@ -461,9 +461,6 @@ if not preconfigured:
         color_print(4,'SCons USE_CONFIG specified as false, will not inherit variables python config file...')        
 
     conf = Configure(env, custom_tests = conf_tests)
-    print "yo"
-    print env
-    print conf_tests
     
     if env['DEBUG']:
         mode = 'debug mode'

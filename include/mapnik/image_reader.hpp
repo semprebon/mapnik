@@ -25,7 +25,7 @@
 #ifndef IMAGE_READER_HPP
 #define IMAGE_READER_HPP
 // mapnik
-#include <mapnik/image_data.hpp>
+#include <mapnik/graphics.hpp>
 #include <mapnik/config.hpp>
 // stl
 #include <stdexcept>
@@ -53,7 +53,9 @@ namespace mapnik
     {
         virtual unsigned width() const=0;
         virtual unsigned height() const=0;
-        virtual void read(unsigned x,unsigned y,ImageData32& image)=0;
+        virtual boost::shared_ptr<ISymbol> init_symbol(unsigned w, unsigned h) const=0;
+        virtual boost::shared_ptr<ISymbol> init_symbol() const=0;
+        virtual void read(unsigned x,unsigned y,ISymbol& image)=0;
         virtual ~ImageReader() {}
     };
 

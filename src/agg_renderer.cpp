@@ -424,7 +424,10 @@ namespace mapnik
       double x;
       double y;
       double z=0;
-      boost::shared_ptr<ImageData32> const& data = sym.get_image();
+      
+      boost::shared_ptr<ISymbol> symbol = boost::const_pointer_cast<ISymbol>(sym.get_image());
+      const ImageData32 *data = &(symbol->rasterize());
+      
       if ( data )
       {
          for (unsigned i=0;i<feature.num_geometries();++i)
@@ -459,7 +462,10 @@ namespace mapnik
    {
       typedef  coord_transform2<CoordTransform,geometry2d> path_type;
       UnicodeString text = feature[sym.get_name()].to_unicode();
-      boost::shared_ptr<ImageData32> const& data = sym.get_image();
+      
+      boost::shared_ptr<ISymbol> symbol = boost::const_pointer_cast<ISymbol>(sym.get_image());
+      const ImageData32 *data = &(symbol->rasterize());
+      
       if (text.length() > 0 && data)
       {
          face_set_ptr faces;
@@ -578,7 +584,9 @@ namespace mapnik
       agg::rendering_buffer buf(pixmap_.raw_data(),width_,height_, width_ * 4);
       agg::pixfmt_rgba32_plain pixf(buf);
       
-      ImageData32 pat =  * sym.get_image();
+      boost::shared_ptr<ISymbol> symbol = boost::const_pointer_cast<ISymbol>(sym.get_image());
+      const ImageData32 pat = symbol->rasterize();
+      
       renderer_base ren_base(pixf);  
       agg::pattern_filter_bilinear_rgba8 filter; 
       pattern_source source(pat);
@@ -627,7 +635,9 @@ namespace mapnik
       agg::scanline_u8 sl;
       ras_ptr->reset();
       
-      ImageData32 const& pattern =  * sym.get_image();
+      boost::shared_ptr<ISymbol> symbol = boost::const_pointer_cast<ISymbol>(sym.get_image());
+      const ImageData32 pattern = symbol->rasterize();
+      
       unsigned w=pattern.width();
       unsigned h=pattern.height();
       agg::row_accessor<agg::int8u> pattern_rbuf((agg::int8u*)pattern.getBytes(),w,h,w*4);  

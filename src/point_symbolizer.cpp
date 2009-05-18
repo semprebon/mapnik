@@ -34,13 +34,13 @@
 namespace mapnik
 {
     point_symbolizer::point_symbolizer()
-        : symbolizer_with_image(boost::shared_ptr<ImageData32>(new ImageData32(4,4))),
+        : symbolizer_with_image(boost::shared_ptr<ISymbol>(new Image32(4,4))),
           opacity_(1.0),
           overlap_(false)
           
     {
         //default point symbol is black 4x4px square
-        image_->set(0xff000000);
+        //TODO CRAIG: image_->set(0xff000000);
     }
     
     point_symbolizer::point_symbolizer(std::string const& file,

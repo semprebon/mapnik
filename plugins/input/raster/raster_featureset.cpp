@@ -22,6 +22,7 @@
 // mapnik
 #include <mapnik/image_reader.hpp>
 #include <mapnik/image_util.hpp>
+#include <mapnik/graphics.hpp>
 
 #include "raster_featureset.hpp"
 
@@ -30,7 +31,7 @@ using mapnik::CoordTransform;
 using mapnik::ImageReader;
 using mapnik::Feature;
 using mapnik::feature_ptr;
-using mapnik::ImageData32;
+using mapnik::Image32;
 using mapnik::raster;
 
 template <typename LookupPolicy>
@@ -72,9 +73,9 @@ feature_ptr raster_featureset<LookupPolicy>::next()
                CoordTransform t(image_width,image_height,extent_,0,0);
                Envelope<double> intersect=bbox_.intersect(curIter_->envelope());
                Envelope<double> ext=t.forward(intersect);
-               ImageData32 image(int(ext.width()+0.5),int(ext.height()+0.5));
+               Image32 image(int(ext.width()+0.5),int(ext.height()+0.5));
                reader->read(int(ext.minx()+0.5),int(ext.miny()+0.5),image);
-               feature->set_raster(mapnik::raster_ptr(new raster(intersect,image)));
+               feature->set_raster(mapnik::raster_ptr(new raster(intersect,image.data())));
             }
          }
       }

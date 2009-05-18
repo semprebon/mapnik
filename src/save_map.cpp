@@ -205,17 +205,17 @@ namespace mapnik
                 if ( ! filename.empty() ) {
                     set_attr( node, "file", filename );
                     set_attr( node, "type", guess_type( filename ) );
-
-                    boost::shared_ptr<ImageData32> img = sym.get_image();
-                    if ( img )
+                    
+                    boost::shared_ptr<ISymbol> symbol = boost::const_pointer_cast<ISymbol>(sym.get_image());
+                    if ( symbol )
                     {
-                        if ( img->width() > 0)
+                        if ( symbol->width() > 0)
                         {
-                            set_attr( node, "width", img->width() );
+                            set_attr( node, "width", symbol->width() );
                         }
-                        if ( img->height() > 0)
+                        if ( symbol->height() > 0)
                         {
-                            set_attr( node, "height", img->height() );
+                            set_attr( node, "height", symbol->height() );
                         }
                     }
 

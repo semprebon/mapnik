@@ -29,28 +29,30 @@
 
 namespace mapnik {
 
-   symbolizer_with_image::symbolizer_with_image(boost::shared_ptr<ImageData32> img) :
+   symbolizer_with_image::symbolizer_with_image(boost::shared_ptr<ISymbol> img) :
       image_( img ) {}
 
    symbolizer_with_image::symbolizer_with_image(std::string const& file,
                                                 std::string const& type, unsigned width,unsigned height)
-      : image_(new ImageData32(width,height)),
-        image_filename_( file )
+      : image_filename_( file )
    {
       std::auto_ptr<ImageReader> reader(get_image_reader(file,type));
-      if (reader.get())
-         reader->read(0,0,*image_);		
+      if (reader.get()) 
+      {
+         image_ = reader->init_symbol();
+         reader->read(0,0,*image_);
+      }
    }
    
    symbolizer_with_image::symbolizer_with_image( symbolizer_with_image const& rhs)
       : image_(rhs.image_), image_filename_(rhs.image_filename_) {}
    
    
-   boost::shared_ptr<ImageData32> symbolizer_with_image::get_image() const
+   boost::shared_ptr<ISymbol> symbolizer_with_image::get_image() const
    {
       return image_;
    }
-   void symbolizer_with_image::set_image(boost::shared_ptr<ImageData32> image) 
+   void symbolizer_with_image::set_image(boost::shared_ptr<ISymbol> image) 
    {
       image_ = image;
    }

@@ -57,14 +57,16 @@ namespace mapnik
         virtual ~TiffReader();
         unsigned width() const;
         unsigned height() const;
-        void read(unsigned x,unsigned y,ImageData32& image);
+        boost::shared_ptr<ISymbol> init_symbol(unsigned w, unsigned h) const;
+        boost::shared_ptr<ISymbol> init_symbol() const;
+        void read(unsigned x,unsigned y,ISymbol& symbol);
     private:
         TiffReader(const TiffReader&);
         TiffReader& operator=(const TiffReader&);
         void init();
-        void read_generic(unsigned x,unsigned y,ImageData32& image);
-        void read_stripped(unsigned x,unsigned y,ImageData32& image);
-        void read_tiled(unsigned x,unsigned y,ImageData32& image);
+        void read_generic(unsigned x,unsigned y,ISymbol& symbol);
+        void read_stripped(unsigned x,unsigned y,ISymbol& symbol);
+        void read_tiled(unsigned x,unsigned y,ISymbol& symbol);
         TIFF* load_if_exists(const std::string& filename);
     };
 
@@ -140,26 +142,36 @@ namespace mapnik
     {
         return height_;
     }
+    
+    boost::shared_ptr<ISymbol> TiffReader::init_symbol(unsigned w, unsigned h) const
+    {
+        return boost::shared_ptr<ISymbol>(new Image32(w, h));
+    }
+    
+    boost::shared_ptr<ISymbol> TiffReader::init_symbol() const
+    {
+        return boost::shared_ptr<ISymbol>(new Image32(width_, height_));
+    }
 
 
-    void TiffReader::read(unsigned x,unsigned y,ImageData32& image)
+    void TiffReader::read(unsigned x,unsigned y,ISymbol& symbol)
     {    
         if (read_method_==stripped)
         {
-            read_stripped(x,y,image);
+            read_stripped(x,y,symbol);
         }
         else if (read_method_==tiled)
         {
-            read_tiled(x,y,image);
+            read_tiled(x,y,symbol);
         }
         else
         {
-            read_generic(x,y,image);
+            read_generic(x,y,symbol);
         }
     }
 
 
-    void TiffReader::read_generic(unsigned x,unsigned y,ImageData32& image)
+    void TiffReader::read_generic(unsigned x,unsigned y,ISymbol& symbol)
     {
 	TIFF* tif = load_if_exists(file_name_);
         if (tif)
@@ -170,11 +182,14 @@ namespace mapnik
     }
 
 
-    void TiffReader::read_tiled(unsigned x0,unsigned y0,ImageData32& image)
+    void TiffReader::read_tiled(unsigned x0,unsigned y0,ISymbol& symbol)
     {
 	TIFF* tif = load_if_exists(file_name_);
         if (tif)
         {
+            Image32& image = static_cast<Image32&>(symbol);
+            ImageData32& image_data = image.data();
+            
             uint32* buf = (uint32*)_TIFFmalloc(tile_width_*tile_height_*sizeof(uint32));
             int width=image.width();
             int height=image.height();
@@ -204,7 +219,7 @@ namespace mapnik
                     row=y+ty0-y0;
                     for (int n=n1;n>=n0;--n)
                     {
-                        image.setRow(row,tx0-x0,tx1-x0,(const unsigned*)&buf[n*tile_width_+tx0-x]);
+                        image_data.setRow(row,tx0-x0,tx1-x0,(const unsigned*)&buf[n*tile_width_+tx0-x]);
                         ++row;
                     }
                 }
@@ -215,11 +230,14 @@ namespace mapnik
     }
 
 
-    void TiffReader::read_stripped(unsigned x0,unsigned y0,ImageData32& image)
+    void TiffReader::read_stripped(unsigned x0,unsigned y0,ISymbol& symbol)
     {
 	TIFF* tif = load_if_exists(file_name_);
         if (tif)
         {
+            Image32& image = static_cast<Image32&>(symbol);
+            ImageData32& image_data = image.data();
+            
             uint32* buf = (uint32*)_TIFFmalloc(width_*rows_per_strip_*sizeof(uint32));
 
             int width=image.width();
@@ -246,7 +264,7 @@ namespace mapnik
                 int n1=laststrip ? (ty1-ty0-1):(rows_per_strip_-ty0-1);
                 for (int n=n1;n>=n0;--n)
                 {
-                    image.setRow(row,tx0-x0,tx1-x0,(const unsigned*)&buf[n*width_+tx0]);
+                    image_data.setRow(row,tx0-x0,tx1-x0,(const unsigned*)&buf[n*width_+tx0]);
                     ++row;
                 }
             }

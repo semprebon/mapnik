@@ -139,11 +139,12 @@ namespace mapnik
             virtual ~ISymbol() {}
             virtual unsigned width() const = 0;
             virtual unsigned height() const = 0;
+            virtual const ImageData32& rasterize() const = 0;
     };
     
 #ifdef HAVE_CAIRO
 #ifdef HAVE_RSVG
-    class MAPNIK_DECL SvgSymbol : ISymbol
+    class MAPNIK_DECL SvgSymbol : public ISymbol
     {
     private:
         unsigned width_;
@@ -153,12 +154,26 @@ namespace mapnik
         SvgSymbol(int width,int height);
         SvgSymbol(SvgSymbol const& rhs);
         SvgSymbol(Cairo::RefPtr<Cairo::ImageSurface> rhs);
+        inline unsigned width()
+        {
+            return width_;
+        }
+        inline unsigned height()
+        {
+            return height_;
+        }
+        const ImageData32& rasterize() const
+        {
+            // TODO CRAIG: implement this using librsvg/cairo
+            const ImageData32 data(width_, height_);
+            return data;
+        }
     };
 #endif
 #endif
    
 // TODO craigds maybe rename to RasterSymbol?
-    class MAPNIK_DECL Image32 : ISymbol
+    class MAPNIK_DECL Image32 : public ISymbol
     {
     private:
         unsigned width_;
@@ -173,10 +188,15 @@ namespace mapnik
 #endif
         ~Image32();
         void setBackground(color const& background);
-        const color& getBackground() const;     
+        const color& getBackground() const;
         const ImageData32& data() const;
         
         inline ImageData32& data() 
+        {
+            return data_;
+        }
+        
+        const ImageData32& rasterize() const
         {
             return data_;
         }

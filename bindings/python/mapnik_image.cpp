@@ -44,6 +44,7 @@ extern "C"
 #endif
 
 using mapnik::Image32;
+using mapnik::ISymbol;
 using mapnik::ImageReader;
 using mapnik::get_image_reader;
 using mapnik::type_from_filename;
@@ -67,13 +68,13 @@ PyObject* tostring2(Image32 const & im, std::string const& format)
 void (*save_to_file1)( mapnik::Image32 const&, std::string const&,std::string const&) = mapnik::save_to_file;
 void (*save_to_file2)( mapnik::Image32 const&, std::string const&) = mapnik::save_to_file;
 
-boost::shared_ptr<Image32> open_from_file(std::string const& filename)
+boost::shared_ptr<ISymbol> open_from_file(std::string const& filename)
 {
    std::auto_ptr<ImageReader> reader(get_image_reader(filename,type_from_filename(filename)));
    if (reader.get())
    {
-      boost::shared_ptr<Image32> image_ptr(new Image32(reader->width(),reader->height()));
-      reader->read(0,0,image_ptr->data());
+      boost::shared_ptr<ISymbol> image_ptr = reader->init_symbol();
+      reader->read(0,0,*image_ptr);
       return image_ptr;
    }
    throw mapnik::ImageReaderException("FIXME: " + filename);  
