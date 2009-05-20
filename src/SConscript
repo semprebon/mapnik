@@ -95,6 +95,11 @@ if 'cairo' in env['LIBS']:
         """
         cairo_renderer.cpp
         """)
+    if 'rsvg-2' in env['LIBS']:
+        source += Split(
+            """
+            svg_reader.cpp
+            """)
 
 if env['XMLPARSER'] == 'tinyxml':
     source += Split(

@@ -49,8 +49,7 @@ namespace mapnik
         : symbolizer_with_image(file, type, width, height),
           opacity_(1.0),      
           overlap_(false)
-          
-    { }
+    {}
     
     point_symbolizer::point_symbolizer(point_symbolizer const& rhs)
         : symbolizer_with_image(rhs),

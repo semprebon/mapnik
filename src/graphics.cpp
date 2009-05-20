@@ -66,10 +66,8 @@ namespace mapnik
     void SvgSymbol::render_to_context(Cairo::RefPtr<Cairo::Context>& context, double x, double y, double opacity) const
     {
         context->save();
-        // TODO: scaling, and maybe rotation?
-        
+        context->translate(x, y);
         rsvg_handle_render_cairo(hRsvg_, context->cobj());
-        
         context->restore();
     }
     

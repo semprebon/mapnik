@@ -174,11 +174,11 @@ namespace mapnik
             if (hRsvg_)
                 rsvg_handle_free(hRsvg_);
         }
-        inline unsigned width()
+        inline unsigned width() const
         {
             return width_;
         }
-        inline unsigned height()
+        inline unsigned height() const
         {
             return height_;
         }
