@@ -46,79 +46,33 @@
 
 namespace mapnik
 {
-   class cairo_pattern : private boost::noncopyable
-   {
-      public:
-         cairo_pattern(ImageData32 const& data)
-         {
-            int pixels = data.width() * data.height();
-            const unsigned int *in_ptr = data.getData();
-            const unsigned int *in_end = in_ptr + pixels;
-            unsigned int *out_ptr;
+    cairo_pattern::cairo_pattern(ImageData32 const& data)
+    {
+        int pixels = data.width() * data.height();
+        const unsigned int *in_ptr = data.getData();
+        const unsigned int *in_end = in_ptr + pixels;
+        unsigned int *out_ptr;
 
-            out_ptr = data_ = new unsigned int[pixels];
+        out_ptr = data_ = new unsigned int[pixels];
 
-            while (in_ptr < in_end)
-            {
-               unsigned int in = *in_ptr++;
-               unsigned int r = (in >> 0) & 0xff;
-               unsigned int g = (in >> 8) & 0xff;
-               unsigned int b = (in >> 16) & 0xff;
-               unsigned int a = (in >> 24) & 0xff;
+        while (in_ptr < in_end)
+        {
+            unsigned int in = *in_ptr++;
+            unsigned int r = (in >> 0) & 0xff;
+            unsigned int g = (in >> 8) & 0xff;
+            unsigned int b = (in >> 16) & 0xff;
+            unsigned int a = (in >> 24) & 0xff;
 
-               r = r * a / 255;
-               g = g * a / 255;
-               b = b * a / 255;
+            r = r * a / 255;
+            g = g * a / 255;
+            b = b * a / 255;
 
-               *out_ptr++ = (a << 24) | (r << 16) | (g << 8) | b;
-            }
+            *out_ptr++ = (a << 24) | (r << 16) | (g << 8) | b;
+        }
 
-            surface_ = Cairo::ImageSurface::create(reinterpret_cast<unsigned char *>(data_), Cairo::FORMAT_ARGB32, data.width(), data.height(), data.width() * 4);
-            pattern_ = Cairo::SurfacePattern::create(surface_);
-         }
-
-         ~cairo_pattern(void)
-         {
-            delete [] data_;
-         }
-         
-         void set_matrix(Cairo::Matrix const& matrix)
-         {
-            pattern_->set_matrix(matrix);
-         }
-
-         void set_origin(double x, double y)
-         {
-            Cairo::Matrix matrix;
-            
-            pattern_->get_matrix(matrix);
-     
-            matrix.x0 = -x;
-            matrix.y0 = -y;
-            
-            pattern_->set_matrix(matrix);
-         }
-         
-         void set_extend(Cairo::Extend extend)
-         {
-            pattern_->set_extend(extend);
-         }
-
-         void set_filter(Cairo::Filter filter)
-         {
-            pattern_->set_filter(filter);
-         }
-
-         Cairo::RefPtr<Cairo::SurfacePattern> const& pattern(void) const
-         {
-            return pattern_;
-         }
-
-      private:
-         unsigned int *data_;
-         Cairo::RefPtr<Cairo::ImageSurface> surface_;
-         Cairo::RefPtr<Cairo::SurfacePattern> pattern_;
-   };
+        surface_ = Cairo::ImageSurface::create(reinterpret_cast<unsigned char *>(data_), Cairo::FORMAT_ARGB32, data.width(), data.height(), data.width() * 4);
+        pattern_ = Cairo::SurfacePattern::create(surface_);
+    }
 
    class cairo_face : private boost::noncopyable
    {
@@ -728,10 +682,8 @@ namespace mapnik
                                      proj_transform const& prj_trans)
    {
       boost::shared_ptr<ISymbol> symbol = boost::const_pointer_cast<ISymbol>(sym.get_image());
-      // TODO CRAIG : use vector symbol rather than rasterizing
-      ImageData32 *data = const_cast<ImageData32*>(&(symbol->rasterize()));
-
-      if ( data )
+      
+      if ( symbol )
       {
          for (unsigned i = 0; i < feature.num_geometries(); ++i)
          {
@@ -744,8 +696,8 @@ namespace mapnik
             prj_trans.backward(x, y, z);
             t_.forward(&x, &y);
 
-            int w = data->width();
-            int h = data->height();
+            int w = symbol->width();
+            int h = symbol->height();
 
             Envelope<double> label_ext (floor(x - 0.5 * w),
                                         floor(y - 0.5 * h),
@@ -755,11 +707,10 @@ namespace mapnik
             if (sym.get_allow_overlap() ||
                 detector_.has_placement(label_ext))
             {
-               cairo_context context(context_);
                int px = int(floor(x - 0.5 * w));
                int py = int(floor(y - 0.5 * h));
-
-               context.add_image(px, py, *data, sym.get_opacity());
+               
+               symbol->render_to_context(context_, px, py, sym.get_opacity());
                detector_.insert(label_ext);
             }
          }
@@ -775,10 +726,8 @@ namespace mapnik
       UnicodeString text = feature[sym.get_name()].to_unicode();
       
       boost::shared_ptr<ISymbol> symbol = boost::const_pointer_cast<ISymbol>(sym.get_image());
-      // TODO use vector symbol rather than rasterizing
-      ImageData32 *data = const_cast<ImageData32*>(&(symbol->rasterize()));
 
-      if (text.length() > 0 && data)
+      if (text.length() > 0 && symbol)
       {
          face_set_ptr faces;
 
@@ -801,8 +750,8 @@ namespace mapnik
 
             placement_finder<label_collision_detector4> finder(detector_);
 
-            int w = data->width();
-            int h = data->height();
+            int w = symbol->width();
+            int h = symbol->height();
 
             for (unsigned i = 0; i < feature.num_geometries(); ++i)
             {
@@ -839,7 +788,7 @@ namespace mapnik
 
                         if (detector_.has_placement(label_ext))
                         {    
-                           context.add_image(px, py, *data);
+                           symbol->render_to_context(context_, px, py);
                            context.add_text(sym, text_placement.placements[ii], face_manager_, faces);
 
                            detector_.insert(label_ext);
@@ -862,7 +811,7 @@ namespace mapnik
                         int px = int(x - (w/2));
                         int py = int(y - (h/2));
 
-                        context.add_image(px, py, *data);
+                        symbol->render_to_context(context_, px, py);
                         context.add_text(sym, text_placement.placements[ii], face_manager_, faces);
                      }
 

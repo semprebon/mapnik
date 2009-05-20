@@ -25,8 +25,14 @@
 #include <mapnik/graphics.hpp>
 #include <mapnik/image_util.hpp>
 
+// TODO CRAIG: remove this and don't use ImageReaderException
+#include <mapnik/image_reader.hpp>
+
 // cairo
 #ifdef HAVE_CAIRO
+// required for rendering vector symbols to contexts
+#include <mapnik/cairo_renderer.hpp>
+
 #include <cairomm/surface.h>
 #endif
 
@@ -35,19 +41,39 @@ namespace mapnik
 #ifdef HAVE_CAIRO
 #ifdef HAVE_RSVG
     SvgSymbol::SvgSymbol(int width,int height)
-        :width_(width), height_(height)
-        {
-            // todo set surface_
-        }
-    SvgSymbol::SvgSymbol(const SvgSymbol& rhs) 
+        :width_(width), height_(height), hRsvg_(0)
+        {}
+    SvgSymbol::SvgSymbol()
+        :width_(0), height_(0), hRsvg_(0)
+        {}
+    SvgSymbol::SvgSymbol(const SvgSymbol& rhs)
         :width_(rhs.width_),
          height_(rhs.height_),
-         surface_(rhs.surface_) {}
+         hRsvg_(0) {}
+         
+    void SvgSymbol::load_from_file(std::string filename, int width, int height)
+    {
+        // TODO:
+        // * handle scaling if width and height are different from width_ and height_
+        // * render at original width and height if width_ or height_ are 0.
+        
+        GError *error = 0;
+        RsvgHandle *h = rsvg_handle_new_from_file(filename.c_str(), &error);
+        if (error || !h) throw ImageReaderException("cannot open image file "+filename);
+        hRsvg_ = h;
+    }
     
-    SvgSymbol::SvgSymbol(Cairo::RefPtr<Cairo::ImageSurface> rhs)
-        :width_(rhs->get_width()),
-         height_(rhs->get_height()),
-         surface_(rhs) {}
+    void SvgSymbol::render_to_context(Cairo::RefPtr<Cairo::Context>& context, double x, double y, double opacity) const
+    {
+        context->save();
+        // TODO: scaling, and maybe rotation?
+        
+        rsvg_handle_render_cairo(hRsvg_, context->cobj());
+        
+        context->restore();
+    }
+    
+    
     
 #endif
 #endif
@@ -122,5 +148,17 @@ namespace mapnik
     const color& Image32::getBackground() const
     {
         return background_;
+    }
+    
+    void Image32::render_to_context(Cairo::RefPtr<Cairo::Context>& context, double x, double y, double opacity) const
+    {
+        cairo_pattern pattern(data_);
+
+        pattern.set_origin(x, y);
+
+        context->save();
+        context->set_source(pattern.pattern());
+        context->paint_with_alpha(opacity);
+        context->restore();
     }
 }

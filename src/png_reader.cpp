@@ -46,7 +46,6 @@ namespace mapnik
         ~PngReader();
         unsigned width() const;
         unsigned height() const;
-        boost::shared_ptr<ISymbol> init_symbol(unsigned w, unsigned h) const;
         boost::shared_ptr<ISymbol> init_symbol() const;
         void read(unsigned x,unsigned y,ISymbol& image);
     private:
@@ -144,11 +143,6 @@ namespace mapnik
     unsigned PngReader::height() const 
     {
         return height_;
-    }
-    
-    boost::shared_ptr<ISymbol> PngReader::init_symbol(unsigned w, unsigned h) const
-    {
-        return boost::shared_ptr<ISymbol>(new Image32(w, h));
     }
     
     boost::shared_ptr<ISymbol> PngReader::init_symbol() const

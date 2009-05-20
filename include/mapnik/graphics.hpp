@@ -30,6 +30,7 @@
 #include <mapnik/image_data.hpp>
 #include <mapnik/envelope.hpp>
 #include <mapnik/image_view.hpp>
+
 // stl
 #include <cmath>
 #include <string>
@@ -38,7 +39,18 @@
 // cairo
 #ifdef HAVE_CAIRO
 #include <cairomm/surface.h>
-#endif
+#include <cairomm/context.h>
+#include <cairomm/enums.h>
+
+// librsvg
+#ifdef HAVE_RSVG
+extern "C"
+{
+#include <librsvg/rsvg.h>
+#include <librsvg/rsvg-cairo.h>
+}
+#endif // HAVE_RSVG
+#endif // HAVE_CAIRO
 
 namespace mapnik
 {
@@ -140,6 +152,9 @@ namespace mapnik
             virtual unsigned width() const = 0;
             virtual unsigned height() const = 0;
             virtual const ImageData32& rasterize() const = 0;
+#ifdef HAVE_CAIRO
+            virtual void render_to_context(Cairo::RefPtr<Cairo::Context>& context, double x, double y, double opacity = 1.0) const = 0;
+#endif
     };
     
 #ifdef HAVE_CAIRO
@@ -149,11 +164,16 @@ namespace mapnik
     private:
         unsigned width_;
         unsigned height_;
-        Cairo::RefPtr<Cairo::ImageSurface> surface_;
+        RsvgHandle *hRsvg_;
     public:
+        SvgSymbol();
         SvgSymbol(int width,int height);
         SvgSymbol(SvgSymbol const& rhs);
-        SvgSymbol(Cairo::RefPtr<Cairo::ImageSurface> rhs);
+        ~SvgSymbol()
+        {
+            if (hRsvg_)
+                rsvg_handle_free(hRsvg_);
+        }
         inline unsigned width()
         {
             return width_;
@@ -162,12 +182,23 @@ namespace mapnik
         {
             return height_;
         }
+        
         const ImageData32& rasterize() const
         {
             // TODO CRAIG: implement this using librsvg/cairo
             const ImageData32 data(width_, height_);
             return data;
+
+            /*
+            // TODO: scaling, and maybe rotation?
+            Cairo::RefPtr<Cairo::ImageSurface> surface = Cairo::ImageSurface::create(FORMAT_ARGB32, width_, height_);
+            Cairo::RefPtr<Cairo::Context> context = Cairo::Context::create(surface);
+            render_to_context(context, 0, 0);
+            */
         }
+        void render_to_context(Cairo::RefPtr<Cairo::Context>& context, double x, double y, double opacity = 1.0) const;
+        
+        void load_from_file(std::string filename, int width, int height);
     };
 #endif
 #endif
@@ -267,6 +298,10 @@ namespace mapnik
         {
             return height_;
         }
+        
+#ifdef HAVE_CAIRO
+        void render_to_context(Cairo::RefPtr<Cairo::Context>& context, double x, double y, double opacity = 1.0) const;
+#endif
 
         inline void set_rectangle(int x0,int y0,ImageData32 const& data)
         {

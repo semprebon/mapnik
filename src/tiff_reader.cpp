@@ -57,7 +57,6 @@ namespace mapnik
         virtual ~TiffReader();
         unsigned width() const;
         unsigned height() const;
-        boost::shared_ptr<ISymbol> init_symbol(unsigned w, unsigned h) const;
         boost::shared_ptr<ISymbol> init_symbol() const;
         void read(unsigned x,unsigned y,ISymbol& symbol);
     private:
@@ -141,11 +140,6 @@ namespace mapnik
     unsigned TiffReader::height() const
     {
         return height_;
-    }
-    
-    boost::shared_ptr<ISymbol> TiffReader::init_symbol(unsigned w, unsigned h) const
-    {
-        return boost::shared_ptr<ISymbol>(new Image32(w, h));
     }
     
     boost::shared_ptr<ISymbol> TiffReader::init_symbol() const

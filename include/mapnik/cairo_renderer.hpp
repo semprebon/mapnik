@@ -42,6 +42,52 @@
 #include <boost/scoped_ptr.hpp>
 
 namespace mapnik {
+   class cairo_pattern : private boost::noncopyable
+   {
+      public:
+         cairo_pattern(ImageData32 const& data);
+         ~cairo_pattern(void)
+         {
+            delete [] data_;
+         }
+    
+         void set_matrix(Cairo::Matrix const& matrix)
+         {
+            pattern_->set_matrix(matrix);
+         }
+
+         void set_origin(double x, double y)
+         {
+            Cairo::Matrix matrix;
+            
+            pattern_->get_matrix(matrix);
+     
+            matrix.x0 = -x;
+            matrix.y0 = -y;
+            
+            pattern_->set_matrix(matrix);
+         }
+         
+         void set_extend(Cairo::Extend extend)
+         {
+            pattern_->set_extend(extend);
+         }
+
+         void set_filter(Cairo::Filter filter)
+         {
+            pattern_->set_filter(filter);
+         }
+
+         Cairo::RefPtr<Cairo::SurfacePattern> const& pattern(void) const
+         {
+            return pattern_;
+         }
+         
+      private:
+         unsigned int *data_;
+         Cairo::RefPtr<Cairo::ImageSurface> surface_;
+         Cairo::RefPtr<Cairo::SurfacePattern> pattern_;
+   };
 
    class cairo_face;
 
