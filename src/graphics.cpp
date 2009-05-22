@@ -24,8 +24,6 @@
 // mapnik
 #include <mapnik/graphics.hpp>
 #include <mapnik/image_util.hpp>
-
-// TODO CRAIG: remove this and don't use ImageReaderException
 #include <mapnik/image_reader.hpp>
 
 // cairo
@@ -41,22 +39,23 @@ namespace mapnik
 #ifdef HAVE_CAIRO
 #ifdef HAVE_RSVG
     SvgSymbol::SvgSymbol(int width,int height)
-        :width_(width), height_(height), hRsvg_(0)
+        :width_(width), height_(height), xscale_(1.0), yscale_(1.0), hRsvg_(0)
+        {}
+    SvgSymbol::SvgSymbol(int width,int height, double xscale, double yscale)
+        :width_(width), height_(height), xscale_(xscale), yscale_(yscale), hRsvg_(0)
         {}
     SvgSymbol::SvgSymbol()
-        :width_(0), height_(0), hRsvg_(0)
+        :width_(0), height_(0), xscale_(1.0), yscale_(1.0), hRsvg_(0)
         {}
     SvgSymbol::SvgSymbol(const SvgSymbol& rhs)
         :width_(rhs.width_),
          height_(rhs.height_),
+         xscale_(rhs.xscale_),
+         yscale_(rhs.yscale_),
          hRsvg_(0) {}
          
     void SvgSymbol::load_from_file(std::string filename, int width, int height)
     {
-        // TODO:
-        // * handle scaling if width and height are different from width_ and height_
-        // * render at original width and height if width_ or height_ are 0.
-        
         GError *error = 0;
         RsvgHandle *h = rsvg_handle_new_from_file(filename.c_str(), &error);
         if (error || !h) throw ImageReaderException("cannot open image file "+filename);
@@ -67,6 +66,7 @@ namespace mapnik
     {
         context->save();
         context->translate(x, y);
+        context->scale(xscale_, yscale_);
         rsvg_handle_render_cairo(hRsvg_, context->cobj());
         context->restore();
     }
@@ -76,20 +76,36 @@ namespace mapnik
 #endif
 #endif
 
+    Image32::Image32(int width,int height, double xscale, double yscale)
+        :width_(width),
+         height_(height),
+         xscale_(xscale),
+         yscale_(yscale),
+         data_(width,height)
+     {}
+         
     Image32::Image32(int width,int height)
         :width_(width),
          height_(height),
-         data_(width,height) {}
+         xscale_(1.0),
+         yscale_(1.0),
+         data_(width,height) 
+     {}
 
     Image32::Image32(const Image32& rhs)
         :width_(rhs.width_),
          height_(rhs.height_),
-         data_(rhs.data_)  {}
+         xscale_(rhs.xscale_),
+         yscale_(rhs.yscale_),
+         data_(rhs.data_)  
+     {}
 
 #ifdef HAVE_CAIRO
-    Image32::Image32(Cairo::RefPtr<Cairo::ImageSurface> rhs)
+    Image32::Image32(Cairo::RefPtr<Cairo::ImageSurface> rhs, double xscale, double yscale)
         :width_(rhs->get_width()),
          height_(rhs->get_height()),
+         xscale_(xscale),
+         yscale_(yscale),
          data_(rhs->get_width(),rhs->get_height())
         {
             if (rhs->get_format() != Cairo::FORMAT_ARGB32)
@@ -156,6 +172,7 @@ namespace mapnik
 
         context->save();
         context->set_source(pattern.pattern());
+        context->scale(xscale_, yscale_);
         context->paint_with_alpha(opacity);
         context->restore();
     }

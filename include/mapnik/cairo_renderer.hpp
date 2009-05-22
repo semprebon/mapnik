@@ -67,6 +67,18 @@ namespace mapnik {
             
             pattern_->set_matrix(matrix);
          }
+
+         void scale(double xscale, double yscale)
+         {
+            Cairo::Matrix matrix;
+            
+            pattern_->get_matrix(matrix);
+            
+            matrix.xx *= xscale;
+            matrix.yy *= yscale;
+            
+            pattern_->set_matrix(matrix);
+         }
          
          void set_extend(Cairo::Extend extend)
          {

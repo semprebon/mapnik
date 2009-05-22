@@ -53,7 +53,7 @@ namespace mapnik
     {
         virtual unsigned width() const=0;
         virtual unsigned height() const=0;
-        virtual boost::shared_ptr<ISymbol> init_symbol() const=0;
+        virtual boost::shared_ptr<ISymbol> init_symbol(double xscale, double yscale) const=0;
         virtual void read(unsigned x,unsigned y,ISymbol& image)=0;
         virtual ~ImageReader() {}
     };

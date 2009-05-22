@@ -73,7 +73,7 @@ boost::shared_ptr<ISymbol> open_from_file(std::string const& filename)
    std::auto_ptr<ImageReader> reader(get_image_reader(filename,type_from_filename(filename)));
    if (reader.get())
    {
-      boost::shared_ptr<ISymbol> image_ptr = reader->init_symbol();
+      boost::shared_ptr<ISymbol> image_ptr = reader->init_symbol(1.0, 1.0);
       reader->read(0,0,*image_ptr);
       return image_ptr;
    }

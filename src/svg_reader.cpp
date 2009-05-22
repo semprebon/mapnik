@@ -45,7 +45,7 @@ namespace mapnik
         ~SvgReader();
         unsigned width() const;
         unsigned height() const;
-        boost::shared_ptr<ISymbol> init_symbol() const;
+        boost::shared_ptr<ISymbol> init_symbol(double xscale, double yscale) const;
         void read(unsigned x,unsigned y,ISymbol& image);
     private:
         SvgReader(const SvgReader&);	
@@ -100,9 +100,9 @@ namespace mapnik
         return height_;
     }
     
-    boost::shared_ptr<ISymbol> SvgReader::init_symbol() const
+    boost::shared_ptr<ISymbol> SvgReader::init_symbol(double xscale, double yscale) const
     {
-        return boost::shared_ptr<ISymbol>(new SvgSymbol());
+        return boost::shared_ptr<ISymbol>(new SvgSymbol(width_, height_, xscale, yscale));
     }
     
     void SvgReader::read(unsigned x0, unsigned y0,ISymbol& symbol)

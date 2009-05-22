@@ -37,10 +37,9 @@ namespace mapnik
         : symbolizer_with_image(boost::shared_ptr<ISymbol>(new Image32(4,4))),
           opacity_(1.0),
           overlap_(false)
-          
     {
         //default point symbol is black 4x4px square
-        //TODO CRAIG: image_->set(0xff000000);
+        static_cast<Image32*>(&*image_)->data().set(0xff000000);
     }
     
     point_symbolizer::point_symbolizer(std::string const& file,

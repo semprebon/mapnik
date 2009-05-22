@@ -31,6 +31,9 @@ namespace mapnik {
 
    symbolizer_with_image::symbolizer_with_image(boost::shared_ptr<ISymbol> img) :
       image_( img ) {}
+   
+   symbolizer_with_image::symbolizer_with_image( symbolizer_with_image const& rhs)
+      : image_(rhs.image_), image_filename_(rhs.image_filename_) {}
 
    symbolizer_with_image::symbolizer_with_image(std::string const& file,
                                                 std::string const& type, unsigned width,unsigned height)
@@ -39,13 +42,20 @@ namespace mapnik {
       std::auto_ptr<ImageReader> reader(get_image_reader(file,type));
       if (reader.get()) 
       {
-         image_ = reader->init_symbol();
+         double xscale = 1.0;
+         double yscale = 1.0;
+         if (width && !height) {
+            xscale = yscale = width / (double)reader->width();
+         } else if (height && !width) {
+            xscale = yscale = height / (double)reader->height();
+         } else if (height && width){
+            xscale = width / (double)reader->width();
+            yscale = height / (double)reader->height();
+         }
+         image_ = reader->init_symbol(xscale, yscale);
          reader->read(0,0,*image_);
       }
    }
-   
-   symbolizer_with_image::symbolizer_with_image( symbolizer_with_image const& rhs)
-      : image_(rhs.image_), image_filename_(rhs.image_filename_) {}
    
    
    boost::shared_ptr<ISymbol> symbolizer_with_image::get_image() const

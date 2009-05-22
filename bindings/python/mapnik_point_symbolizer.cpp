@@ -31,8 +31,9 @@ void export_point_symbolizer()
     
     class_<point_symbolizer>("PointSymbolizer",
                              init<>("Default Point Symbolizer - 4x4 black square"))
-        .def (init<std::string const&,
-              std::string const&,unsigned,unsigned>("TODO"))
+        .def (init<std::string const&, std::string const&, unsigned, unsigned>(
+            (args("width")=0, arg("height")=0),
+            "Creates a PointSymbolizer from a filename and type.\nIf width and height are given, the image will be scaled.\nSpecify one or the other to scale proportionately."))
         .add_property("allow_overlap",
               &point_symbolizer::get_allow_overlap,
               &point_symbolizer::set_allow_overlap)

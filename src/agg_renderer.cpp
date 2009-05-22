@@ -426,9 +426,9 @@ namespace mapnik
       double z=0;
       
       boost::shared_ptr<ISymbol> symbol = boost::const_pointer_cast<ISymbol>(sym.get_image());
-      const ImageData32 *data = &(symbol->rasterize());
+      const boost::shared_ptr<const Image32> image = symbol->rasterize();
       
-      if ( data )
+      if ( image )
       {
          for (unsigned i=0;i<feature.num_geometries();++i)
          {
@@ -437,8 +437,8 @@ namespace mapnik
             geom.label_position(&x,&y);
             prj_trans.backward(x,y,z);
             t_.forward(&x,&y);
-            int w = data->width();
-            int h = data->height();
+            int w = image->width();
+            int h = image->height();
             int px=int(floor(x - 0.5 * w));
             int py=int(floor(y - 0.5 * h));
             Envelope<double> label_ext (floor(x - 0.5 * w),
@@ -448,7 +448,7 @@ namespace mapnik
             if (sym.get_allow_overlap() || 
                 detector_.has_placement(label_ext))
             {    
-               pixmap_.set_rectangle_alpha2(*data,px,py,sym.get_opacity());
+               pixmap_.set_rectangle_alpha2(image->data(),px,py,sym.get_opacity());
                detector_.insert(label_ext);
             }
          }
@@ -464,9 +464,9 @@ namespace mapnik
       UnicodeString text = feature[sym.get_name()].to_unicode();
       
       boost::shared_ptr<ISymbol> symbol = boost::const_pointer_cast<ISymbol>(sym.get_image());
-      const ImageData32 *data = &(symbol->rasterize());
+      const boost::shared_ptr<const Image32> image = symbol->rasterize();
       
-      if (text.length() > 0 && data)
+      if (text.length() > 0 && image)
       {
          face_set_ptr faces;
 
@@ -495,8 +495,8 @@ namespace mapnik
             faces->get_string_info(info);
            
 
-            int w = data->width();
-            int h = data->height();
+            int w = image->width();
+            int h = image->height();
             
             unsigned num_geom = feature.num_geometries();
             for (unsigned i=0;i<num_geom;++i)
@@ -532,7 +532,7 @@ namespace mapnik
                         
                         if ( detector_.has_placement(label_ext))
                         {    
-                           pixmap_.set_rectangle_alpha(px,py,*data);
+                           pixmap_.set_rectangle_alpha(px,py,image->data());
                            Envelope<double> dim = ren.prepare_glyphs(&text_placement.placements[ii]);
                            ren.render(x,y);
                            detector_.insert(label_ext);
@@ -549,15 +549,15 @@ namespace mapnik
                      
                      for (unsigned int ii = 0; ii < text_placement.placements.size(); ++ ii)
                      {
-                        int w = data->width();
-                        int h = data->height();	                     
+                        int w = image->width();
+                        int h = image->height();	                     
                         double x = text_placement.placements[ii].starting_x;
                         double y = text_placement.placements[ii].starting_y;
                         
                         int px=int(x - (w/2));
                         int py=int(y - (h/2));
                         
-                        pixmap_.set_rectangle_alpha(px,py,*data);
+                        pixmap_.set_rectangle_alpha(px,py,image->data());
                         
                         Envelope<double> dim = ren.prepare_glyphs(&text_placement.placements[ii]);
                         ren.render(x,y);
@@ -585,11 +585,11 @@ namespace mapnik
       agg::pixfmt_rgba32_plain pixf(buf);
       
       boost::shared_ptr<ISymbol> symbol = boost::const_pointer_cast<ISymbol>(sym.get_image());
-      const ImageData32 pat = symbol->rasterize();
+      boost::shared_ptr<const Image32> image = symbol->rasterize();
       
       renderer_base ren_base(pixf);  
       agg::pattern_filter_bilinear_rgba8 filter; 
-      pattern_source source(pat);
+      pattern_source source(image->data());
       pattern_type pattern (filter,source);
       renderer_type ren(ren_base, pattern);
       ren.clip_box(0,0,width_,height_);
@@ -636,11 +636,11 @@ namespace mapnik
       ras_ptr->reset();
       
       boost::shared_ptr<ISymbol> symbol = boost::const_pointer_cast<ISymbol>(sym.get_image());
-      const ImageData32 pattern = symbol->rasterize();
+      const boost::shared_ptr<const Image32> image = symbol->rasterize();
       
-      unsigned w=pattern.width();
-      unsigned h=pattern.height();
-      agg::row_accessor<agg::int8u> pattern_rbuf((agg::int8u*)pattern.getBytes(),w,h,w*4);  
+      unsigned w=image->width();
+      unsigned h=image->height();
+      agg::row_accessor<agg::int8u> pattern_rbuf((agg::int8u*)image->data().getBytes(),w,h,w*4);  
       agg::span_allocator<agg::rgba8> sa;
       agg::pixfmt_alpha_blend_rgba<agg::blender_rgba32,
          agg::row_accessor<agg::int8u>, agg::pixel32_type> pixf_pattern(pattern_rbuf);

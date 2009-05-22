@@ -35,7 +35,7 @@ namespace mapnik
     {
         line_pattern_symbolizer(std::string const& file,
                                 std::string const& type,
-                                unsigned width,unsigned height);
+                                unsigned width=0,unsigned height=0);
         line_pattern_symbolizer(line_pattern_symbolizer const& rhs);
     };    
 }

@@ -830,14 +830,16 @@ namespace mapnik
       typedef coord_transform2<CoordTransform,geometry2d> path_type;
 
       boost::shared_ptr<ISymbol> symbol = boost::const_pointer_cast<ISymbol>(sym.get_image());
-      // TODO use vector symbol rather than rasterizing
-      ImageData32 *data = const_cast<ImageData32*>(&(symbol->rasterize()));
       
-      unsigned width(data->width());
-      unsigned height(data->height());
+      // TODO use vector symbol rather than rasterizing
+      const boost::shared_ptr<const Image32> image = symbol->rasterize();
+      
+      unsigned width(image->width());
+      unsigned height(image->height());
 
       cairo_context context(context_);
-      cairo_pattern pattern(*data);
+      cairo_pattern pattern(image->data());
+      pattern.scale(symbol->xscale(), symbol->yscale());
 
       pattern.set_extend(Cairo::EXTEND_REPEAT);
       pattern.set_filter(Cairo::FILTER_BILINEAR);
@@ -902,8 +904,9 @@ namespace mapnik
       
       boost::shared_ptr<ISymbol> symbol = boost::const_pointer_cast<ISymbol>(sym.get_image());
       // TODO use vector symbol rather than rasterizing
-      cairo_pattern pattern(symbol->rasterize());
+      cairo_pattern pattern(symbol->rasterize()->data());
       pattern.set_extend(Cairo::EXTEND_REPEAT);
+      pattern.scale(symbol->xscale(), symbol->yscale());
 
       context.set_pattern(pattern);
 

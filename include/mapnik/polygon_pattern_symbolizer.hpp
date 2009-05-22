@@ -36,7 +36,7 @@ namespace mapnik
 	
         polygon_pattern_symbolizer(std::string const& file,
                                    std::string const& type,
-                                   unsigned width,unsigned height);
+                                   unsigned width=0,unsigned height=0);
         
         polygon_pattern_symbolizer(polygon_pattern_symbolizer const& rhs);
     };

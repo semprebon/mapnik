@@ -36,7 +36,7 @@ namespace mapnik
         explicit point_symbolizer();
         point_symbolizer(std::string const& file,
                          std::string const& type,
-                         unsigned width,unsigned height);
+                         unsigned width=0,unsigned height=0);
         point_symbolizer(point_symbolizer const& rhs);
         void set_allow_overlap(bool overlap);
         bool get_allow_overlap() const;

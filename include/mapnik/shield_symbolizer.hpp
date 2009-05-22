@@ -42,13 +42,13 @@ namespace mapnik
                       color const& fill, 
                       std::string const& file,
                       std::string const& type,
-                      unsigned width,unsigned height);
+                      unsigned width=0,unsigned height=0);
     shield_symbolizer(std::string const& name,
                       unsigned size,
                       color const& fill, 
                       std::string const& file,
                       std::string const& type,
-                      unsigned width,unsigned height);
+                      unsigned width=0,unsigned height=0);
   };
 }
 

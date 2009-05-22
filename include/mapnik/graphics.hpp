@@ -24,6 +24,9 @@
 
 #ifndef GRAPHICS_HPP
 #define GRAPHICS_HPP
+
+#include <boost/enable_shared_from_this.hpp>
+
 // mapnik
 #include <mapnik/color.hpp>
 #include <mapnik/gamma.hpp>
@@ -144,92 +147,52 @@ namespace mapnik
                       if (b1>255) b1=255;
                 }
         };
-   
+    
+    class Image32;
     class ISymbol
     {
         public:
             virtual ~ISymbol() {}
             virtual unsigned width() const = 0;
             virtual unsigned height() const = 0;
-            virtual const ImageData32& rasterize() const = 0;
+            virtual unsigned xscale() const = 0;
+            virtual unsigned yscale() const = 0;
+            virtual const boost::shared_ptr<const Image32> rasterize() const = 0;
 #ifdef HAVE_CAIRO
             virtual void render_to_context(Cairo::RefPtr<Cairo::Context>& context, double x, double y, double opacity = 1.0) const = 0;
 #endif
     };
-    
-#ifdef HAVE_CAIRO
-#ifdef HAVE_RSVG
-    class MAPNIK_DECL SvgSymbol : public ISymbol
-    {
-    private:
-        unsigned width_;
-        unsigned height_;
-        RsvgHandle *hRsvg_;
-    public:
-        SvgSymbol();
-        SvgSymbol(int width,int height);
-        SvgSymbol(SvgSymbol const& rhs);
-        ~SvgSymbol()
-        {
-            if (hRsvg_)
-                rsvg_handle_free(hRsvg_);
-        }
-        inline unsigned width() const
-        {
-            return width_;
-        }
-        inline unsigned height() const
-        {
-            return height_;
-        }
-        
-        const ImageData32& rasterize() const
-        {
-            // TODO CRAIG: implement this using librsvg/cairo
-            const ImageData32 data(width_, height_);
-            return data;
-
-            /*
-            // TODO: scaling, and maybe rotation?
-            Cairo::RefPtr<Cairo::ImageSurface> surface = Cairo::ImageSurface::create(FORMAT_ARGB32, width_, height_);
-            Cairo::RefPtr<Cairo::Context> context = Cairo::Context::create(surface);
-            render_to_context(context, 0, 0);
-            */
-        }
-        void render_to_context(Cairo::RefPtr<Cairo::Context>& context, double x, double y, double opacity = 1.0) const;
-        
-        void load_from_file(std::string filename, int width, int height);
-    };
-#endif
-#endif
    
 // TODO craigds maybe rename to RasterSymbol?
-    class MAPNIK_DECL Image32 : public ISymbol
+    class MAPNIK_DECL Image32 : public ISymbol, public boost::enable_shared_from_this<Image32>
     {
     private:
         unsigned width_;
         unsigned height_;
+        double xscale_;
+        double yscale_;
         color background_;
         ImageData32 data_;
     public:
         Image32(int width,int height);
+        Image32(int width,int height, double xscale, double yscale);
         Image32(Image32 const& rhs);
 #ifdef HAVE_CAIRO
-        Image32(Cairo::RefPtr<Cairo::ImageSurface> rhs);
+        Image32(Cairo::RefPtr<Cairo::ImageSurface> rhs, double xscale=1.0, double yscale=1.0);
 #endif
         ~Image32();
         void setBackground(color const& background);
         const color& getBackground() const;
         const ImageData32& data() const;
         
-        inline ImageData32& data() 
+        inline ImageData32& data()
         {
             return data_;
         }
         
-        const ImageData32& rasterize() const
+        const boost::shared_ptr<const Image32> rasterize() const
         {
-            return data_;
+            return shared_from_this();
         }
         
         inline const unsigned char* raw_data() const
@@ -255,6 +218,30 @@ namespace mapnik
         }
 
     public:
+        inline unsigned width() const
+        {
+            return width_;
+        }
+	
+        inline unsigned height() const
+        {
+            return height_;
+        }
+        
+        inline unsigned xscale() const
+        {
+            return xscale_;
+        }
+        
+        inline unsigned yscale() const
+        {
+            return yscale_;
+        }
+        
+#ifdef HAVE_CAIRO
+        void render_to_context(Cairo::RefPtr<Cairo::Context>& context, double x, double y, double opacity = 1.0) const;
+#endif
+
         inline void setPixel(int x,int y,unsigned int rgba)
         {
             if (checkBounds(x,y))
@@ -288,20 +275,6 @@ namespace mapnik
                 data_(x,y)= (a0 << 24)| (b0 << 16) |  (g0 << 8) | (r0) ;
             }
         }
-
-        inline unsigned width() const
-        {
-            return width_;
-        }
-	
-        inline unsigned height() const
-        {
-            return height_;
-        }
-        
-#ifdef HAVE_CAIRO
-        void render_to_context(Cairo::RefPtr<Cairo::Context>& context, double x, double y, double opacity = 1.0) const;
-#endif
 
         inline void set_rectangle(int x0,int y0,ImageData32 const& data)
         {
@@ -448,5 +421,62 @@ namespace mapnik
             }
         }
     };
+    
+#ifdef HAVE_CAIRO
+#ifdef HAVE_RSVG
+    class MAPNIK_DECL SvgSymbol : public ISymbol
+    {
+    private:
+        unsigned width_;
+        unsigned height_;
+        double xscale_;
+        double yscale_;
+        RsvgHandle *hRsvg_;
+    public:
+        SvgSymbol();
+        SvgSymbol(int width,int height);
+        SvgSymbol(int width,int height, double xscale, double yscale);
+        SvgSymbol(SvgSymbol const& rhs);
+        ~SvgSymbol()
+        {
+            if (hRsvg_)
+                rsvg_handle_free(hRsvg_);
+        }
+        inline unsigned width() const
+        {
+            return width_;
+        }
+        inline unsigned height() const
+        {
+            return height_;
+        }
+        
+        inline unsigned xscale() const
+        {
+            return xscale_;
+        }
+        
+        inline unsigned yscale() const
+        {
+            return yscale_;
+        }
+        
+        const boost::shared_ptr<const Image32> rasterize() const
+        {
+            Cairo::RefPtr<Cairo::ImageSurface> surface = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, width_, height_);
+            Cairo::RefPtr<Cairo::Context> context = Cairo::Context::create(surface);
+
+            context->save();
+            rsvg_handle_render_cairo(hRsvg_, context->cobj());
+            context->restore();
+            
+            return boost::shared_ptr<const Image32>(new Image32(surface, xscale_, yscale_));
+        }
+        void render_to_context(Cairo::RefPtr<Cairo::Context>& context, double x, double y, double opacity = 1.0) const;
+        
+        void load_from_file(std::string filename, int width, int height);
+    };
+#endif
+#endif
 }
 #endif //GRAPHICS_HPP
