@@ -458,17 +458,8 @@ namespace mapnik
             return yscale_;
         }
         
-        const boost::shared_ptr<const Image32> rasterize() const
-        {
-            Cairo::RefPtr<Cairo::ImageSurface> surface = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, width_, height_);
-            Cairo::RefPtr<Cairo::Context> context = Cairo::Context::create(surface);
-
-            context->save();
-            rsvg_handle_render_cairo(hRsvg_, context->cobj());
-            context->restore();
-            
-            return boost::shared_ptr<const Image32>(new Image32(surface, xscale_, yscale_));
-        }
+        const boost::shared_ptr<const Image32> rasterize() const;
+        
         void render_to_context(Cairo::RefPtr<Cairo::Context>& context, double x, double y, double opacity = 1.0) const;
         
         void load_from_file(std::string filename, int width, int height);

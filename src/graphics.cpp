@@ -32,6 +32,15 @@
 #include <mapnik/cairo_renderer.hpp>
 
 #include <cairomm/surface.h>
+
+// librsvg
+#ifdef HAVE_RSVG
+extern "C"
+{
+#include <librsvg/rsvg.h>
+#include <librsvg/rsvg-cairo.h>
+}
+#endif // HAVE_RSVG
 #endif
 
 namespace mapnik
@@ -71,8 +80,18 @@ namespace mapnik
         context->restore();
     }
     
-    
-    
+    const boost::shared_ptr<const Image32> SvgSymbol::rasterize() const
+    {
+        Cairo::RefPtr<Cairo::ImageSurface> surface = Cairo::ImageSurface::create(Cairo::FORMAT_ARGB32, width_*xscale_, height_*yscale_);
+        Cairo::RefPtr<Cairo::Context> context = Cairo::Context::create(surface);
+
+        context->save();
+        context->scale(xscale_, yscale_);
+        rsvg_handle_render_cairo(hRsvg_, context->cobj());
+        context->restore();
+        
+        return boost::shared_ptr<const Image32>(new Image32(surface));
+    }
 #endif
 #endif
 
@@ -152,7 +171,7 @@ namespace mapnik
     {
         return data_;
     }
-        
+    
     const boost::shared_ptr<const Image32> Image32::rasterize() const
     {
         if (xscale_ == 1.0 && yscale_ == 1.0)
