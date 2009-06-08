@@ -163,17 +163,19 @@ namespace mapnik
     {
         return background_;
     }
-    
+
+#ifdef HAVE_CAIRO
     void Image32::render_to_context(Cairo::RefPtr<Cairo::Context>& context, double x, double y, double opacity) const
     {
         cairo_pattern pattern(data_);
 
-        pattern.set_origin(x, y);
+        pattern.set_origin(x/xscale_, y/yscale_);
 
         context->save();
-        context->set_source(pattern.pattern());
         context->scale(xscale_, yscale_);
+        context->set_source(pattern.pattern());
         context->paint_with_alpha(opacity);
         context->restore();
     }
+#endif
 }
