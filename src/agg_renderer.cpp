@@ -439,8 +439,8 @@ namespace mapnik
             t_.forward(&x,&y);
             int w = image->width();
             int h = image->height();
-            int px=int(floor(x - 0.5 * w));
-            int py=int(floor(y - 0.5 * h));
+            int px=int(floor(x - 0.5 * w * symbol->xscale()));
+            int py=int(floor(y - 0.5 * h * symbol->yscale()));
             Envelope<double> label_ext (floor(x - 0.5 * w),
                                         floor(y - 0.5 * h),
                                         ceil (x + 0.5 * w),
@@ -526,12 +526,12 @@ namespace mapnik
                         position pos = sym.get_displacement();
                         double lx = x - boost::get<0>(pos);
                         double ly = y - boost::get<1>(pos);
-                        int px=int(lx - (0.5 * w)) ;
-                        int py=int(ly - (0.5 * h)) ;
                         Envelope<double> label_ext (floor(lx - 0.5 * w), floor(ly - 0.5 * h), ceil (lx + 0.5 * w), ceil (ly + 0.5 * h));
                         
                         if ( detector_.has_placement(label_ext))
                         {    
+                           int px=int(lx - (0.5 * w * symbol->xscale()));
+                           int py=int(ly - (0.5 * h * symbol->yscale()));
                            pixmap_.set_rectangle_alpha(px,py,image->data());
                            Envelope<double> dim = ren.prepare_glyphs(&text_placement.placements[ii]);
                            ren.render(x,y);

@@ -707,8 +707,8 @@ namespace mapnik
             if (sym.get_allow_overlap() ||
                 detector_.has_placement(label_ext))
             {
-               int px = int(floor(x - 0.5 * w));
-               int py = int(floor(y - 0.5 * h));
+               int px = int(floor(x - 0.5 * w * symbol->xscale()));
+               int py = int(floor(y - 0.5 * h * symbol->yscale()));
                
                symbol->render_to_context(context_, px, py, sym.get_opacity());
                detector_.insert(label_ext);
@@ -782,12 +782,12 @@ namespace mapnik
                         position pos = sym.get_displacement();
                         double lx = x - boost::get<0>(pos);
                         double ly = y - boost::get<1>(pos);
-                        int px = int(lx - (0.5 * w)) ;
-                        int py = int(ly - (0.5 * h)) ;
                         Envelope<double> label_ext (floor(lx - 0.5 * w), floor(ly - 0.5 * h), ceil (lx + 0.5 * w), ceil (ly + 0.5 * h));
 
                         if (detector_.has_placement(label_ext))
                         {    
+                           int px = int(lx - (0.5 * w * symbol->xscale()));
+                           int py = int(ly - (0.5 * h * symbol->yscale()));
                            symbol->render_to_context(context_, px, py);
                            context.add_text(sym, text_placement.placements[ii], face_manager_, faces);
 
@@ -808,8 +808,8 @@ namespace mapnik
                      {
                         double x = text_placement.placements[ii].starting_x;
                         double y = text_placement.placements[ii].starting_y;
-                        int px = int(x - (w/2));
-                        int py = int(y - (h/2));
+                        int px = int(x - (0.5 * w * symbol->xscale()));
+                        int py = int(y - (0.5 * h * symbol->yscale()));
 
                         symbol->render_to_context(context_, px, py);
                         context.add_text(sym, text_placement.placements[ii], face_manager_, faces);

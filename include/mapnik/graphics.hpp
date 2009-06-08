@@ -155,8 +155,8 @@ namespace mapnik
             virtual ~ISymbol() {}
             virtual unsigned width() const = 0;
             virtual unsigned height() const = 0;
-            virtual unsigned xscale() const = 0;
-            virtual unsigned yscale() const = 0;
+            virtual double xscale() const = 0;
+            virtual double yscale() const = 0;
             virtual const boost::shared_ptr<const Image32> rasterize() const = 0;
 #ifdef HAVE_CAIRO
             virtual void render_to_context(Cairo::RefPtr<Cairo::Context>& context, double x, double y, double opacity = 1.0) const = 0;
@@ -228,12 +228,12 @@ namespace mapnik
             return height_;
         }
         
-        inline unsigned xscale() const
+        inline double xscale() const
         {
             return xscale_;
         }
         
-        inline unsigned yscale() const
+        inline double yscale() const
         {
             return yscale_;
         }
@@ -451,12 +451,12 @@ namespace mapnik
             return height_;
         }
         
-        inline unsigned xscale() const
+        inline double xscale() const
         {
             return xscale_;
         }
         
-        inline unsigned yscale() const
+        inline double yscale() const
         {
             return yscale_;
         }
