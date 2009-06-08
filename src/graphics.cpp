@@ -89,7 +89,7 @@ namespace mapnik
          height_(height),
          xscale_(1.0),
          yscale_(1.0),
-         data_(width,height) 
+         data_(width,height)
      {}
 
     Image32::Image32(const Image32& rhs)
@@ -97,7 +97,7 @@ namespace mapnik
          height_(rhs.height_),
          xscale_(rhs.xscale_),
          yscale_(rhs.yscale_),
-         data_(rhs.data_)  
+         data_(rhs.data_)
      {}
 
 #ifdef HAVE_CAIRO
@@ -151,6 +151,16 @@ namespace mapnik
     const ImageData32& Image32::data() const
     {
         return data_;
+    }
+        
+    const boost::shared_ptr<const Image32> Image32::rasterize() const
+    {
+        if (xscale_ == 1.0 && yscale_ == 1.0)
+            return shared_from_this();
+        
+        Image32 *scaled = new Image32(xscale_*width_, yscale_*height_);
+        scale_image_bilinear(scaled->data(), data_);
+        return boost::shared_ptr<const Image32>(scaled);
     }
 
     void Image32::setBackground(const color& background)

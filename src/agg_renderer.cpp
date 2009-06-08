@@ -437,8 +437,8 @@ namespace mapnik
             geom.label_position(&x,&y);
             prj_trans.backward(x,y,z);
             t_.forward(&x,&y);
-            int w = image->width();
-            int h = image->height();
+            int w = symbol->width();
+            int h = symbol->height();
             int px=int(floor(x - 0.5 * w * symbol->xscale()));
             int py=int(floor(y - 0.5 * h * symbol->yscale()));
             Envelope<double> label_ext (floor(x - 0.5 * w),
@@ -495,8 +495,8 @@ namespace mapnik
             faces->get_string_info(info);
            
 
-            int w = image->width();
-            int h = image->height();
+            int w = symbol->width();
+            int h = symbol->height();
             
             unsigned num_geom = feature.num_geometries();
             for (unsigned i=0;i<num_geom;++i)

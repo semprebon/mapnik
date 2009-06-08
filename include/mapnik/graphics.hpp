@@ -190,10 +190,7 @@ namespace mapnik
             return data_;
         }
         
-        const boost::shared_ptr<const Image32> rasterize() const
-        {
-            return shared_from_this();
-        }
+        const boost::shared_ptr<const Image32> rasterize() const;
         
         inline const unsigned char* raw_data() const
         {
