@@ -99,13 +99,22 @@ namespace mapnik {
       if (is_tiff(filename)) return "tiff";
       return "unknown";
    }
-   
+
+   inline std::string guess_type( const std::string & filename )
+   {
+      std::string::size_type idx = filename.find_last_of(".");
+      if ( idx != std::string::npos ) {
+          return filename.substr( idx + 1 );
+      }
+      return "<unknown>";
+   }
+       
    template <typename T>
    double distance(T x0,T y0,T x1,T y1)
    {
       double dx = x1-x0;
       double dy = y1-y0;
-      return sqrt(dx * dx + dy * dy);
+      return std::sqrt(dx * dx + dy * dy);
    }
    
    template <typename Image>

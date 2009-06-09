@@ -618,11 +618,11 @@ if not preconfigured:
     if env['BOOST_VERSION']: append_params.append(env['BOOST_VERSION'])
     
     # if the user is not setting custom boost configuration
-    # enforce boost version greater than or equal to 1.33
-    if not conf.CheckBoost('1.33'):
-        color_print (1,'Boost version 1.33 or greater is requred') 
+    # enforce boost version greater than or equal to 1.34
+    if not conf.CheckBoost('1.34'):
+        color_print (1,'Boost version 1.34 or greater is requred') 
         if not env['BOOST_VERSION']:
-            env['MISSING_DEPS'].append('boost version >=1.33')
+            env['MISSING_DEPS'].append('boost version >=1.34')
     else:
         color_print (4,'Found boost lib version... %s' % boost_lib_version_from_header )
     
@@ -878,7 +878,7 @@ if env['DEMO']:
 # Build the pgsql2psqlite app if requested
 if env['PGSQL2SQLITE']:
     SConscript('utils/pgsql2sqlite/SConscript')
-
+    
 # Build shapeindex and remove its dependency from the LIBS
 if 'boost_program_options%s' % env['BOOST_APPEND'] in env['LIBS']:
     SConscript('utils/shapeindex/SConscript')
