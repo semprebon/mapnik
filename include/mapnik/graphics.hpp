@@ -433,6 +433,7 @@ namespace mapnik
         double xscale_;
         double yscale_;
         RsvgHandle *hRsvg_;
+        mutable Cairo::RefPtr<Cairo::Surface> surface_meta_;
     public:
         SvgSymbol();
         SvgSymbol(int width,int height);

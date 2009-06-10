@@ -73,10 +73,38 @@ namespace mapnik
     
     void SvgSymbol::render_to_context(Cairo::RefPtr<Cairo::Context>& context, double x, double y, double opacity) const
     {
+        
+        /* this metasurface caching not only makes things faster, it is required for 
+         * cairo to recognize and re-use symbols when rendering vector output.
+         */
+        if (!surface_meta_)
+        {
+            Cairo::RefPtr<Cairo::Surface> surface = context->get_target();
+            
+            // could use surface->get_content() here instead but it requires cairomm 1.8
+            cairo_content_t c_content = cairo_surface_get_content(const_cast<cairo_surface_t*>(surface->cobj()));
+            Cairo::Content content = static_cast<Cairo::Content>(c_content);
+            
+            surface_meta_ = Cairo::Surface::create(surface, content, width_ * xscale_, height_ * yscale_);
+            
+            Cairo::RefPtr<Cairo::Context> c_meta = Cairo::Context::create(surface_meta_);
+            c_meta->scale(xscale_, yscale_);
+            c_meta->save();
+            rsvg_handle_render_cairo(hRsvg_, c_meta->cobj());
+            c_meta->restore();
+        }
+
         context->save();
-        context->translate(x, y);
-        context->scale(xscale_, yscale_);
-        rsvg_handle_render_cairo(hRsvg_, context->cobj());
+        Cairo::RefPtr<Cairo::SurfacePattern> pattern = Cairo::SurfacePattern::create(surface_meta_);
+        
+        Cairo::Matrix matrix;
+        pattern->get_matrix(matrix);
+        matrix.x0 = -x;
+        matrix.y0 = -y;
+        pattern->set_matrix(matrix);
+        
+        context->set_source(pattern);
+        context->paint_with_alpha(opacity);
         context->restore();
     }
     
