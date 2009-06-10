@@ -41,6 +41,7 @@
 
 // cairo
 #ifdef HAVE_CAIRO
+
 #include <cairomm/surface.h>
 #include <cairomm/context.h>
 #include <cairomm/enums.h>
@@ -173,6 +174,9 @@ namespace mapnik
         double yscale_;
         color background_;
         ImageData32 data_;
+#ifdef HAVE_CAIRO
+        mutable Cairo::RefPtr<Cairo::Surface> surface_meta_;
+#endif
     public:
         Image32(int width,int height);
         Image32(int width,int height, double xscale, double yscale);
