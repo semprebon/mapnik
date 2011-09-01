@@ -27,6 +27,7 @@
 #include <mapnik/config_error.hpp>
 
 // boost
+#define BOOST_FILESYSTEM_VERSION 2
 #include <boost/version.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/algorithm/string.hpp>

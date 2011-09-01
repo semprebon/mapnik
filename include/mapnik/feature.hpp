@@ -29,7 +29,7 @@
 #include <mapnik/geometry.hpp>
 #include <mapnik/raster.hpp>
 // boost
-#include <boost/property_map.hpp>
+#include <boost/property_map/property_map.hpp>
 #include <boost/utility.hpp>
 #include <boost/shared_ptr.hpp>
 // stl

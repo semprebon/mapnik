@@ -35,6 +35,7 @@
 #include <mapnik/libxml2_loader.hpp>
 
 // boost
+#define BOOST_FILESYSTEM_VERSION 2
 #include <boost/optional.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
