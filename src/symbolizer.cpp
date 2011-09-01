@@ -36,7 +36,8 @@ namespace mapnik {
       : image_(rhs.image_), image_filename_(rhs.image_filename_) {}
 
    symbolizer_with_image::symbolizer_with_image(std::string const& file,
-                                                std::string const& type, unsigned width,unsigned height)
+                                                std::string const& type, unsigned width,unsigned height,
+                                                float opacity)
       : image_filename_( file )
    {
       std::auto_ptr<ImageReader> reader(get_image_reader(file,type));

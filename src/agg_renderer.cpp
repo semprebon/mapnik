@@ -68,6 +68,10 @@
 // boost
 #include <boost/utility.hpp>
 #include <boost/tuple/tuple.hpp>
+#include <boost/gil/gil_all.hpp>
+#include <mapnik/image_data.hpp>
+#include <mapnik/image_util.hpp>
+#include <iostream>
 
 // stl
 #ifdef MAPNIK_DEBUG
@@ -76,6 +80,7 @@
 
 namespace mapnik 
 {
+        
    class pattern_source : private boost::noncopyable
    {
       public:
@@ -429,7 +434,7 @@ namespace mapnik
       const boost::shared_ptr<const Image32> image = symbol->rasterize();
       
       if ( image )
-      {
+      {        	
          for (unsigned i=0;i<feature.num_geometries();++i)
          {
             geometry2d const& geom = feature.get_geometry(i);

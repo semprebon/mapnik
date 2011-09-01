@@ -42,7 +42,8 @@ namespace mapnik
             symbolizer_with_image(boost::shared_ptr<ISymbol> img);
             symbolizer_with_image(std::string const& file,
                                    std::string const& type,
-                                   unsigned width=0,unsigned height=0);
+                                   unsigned width=0,unsigned height=0,
+								   float opacity=1.0);
         
             symbolizer_with_image(symbolizer_with_image const& rhs);
         

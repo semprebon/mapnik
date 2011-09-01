@@ -618,6 +618,7 @@ namespace mapnik
                 get_opt_attr<boolean>(sym, "allow_overlap");
             optional<float> opacity = 
                 get_opt_attr<float>(sym, "opacity");
+                
 
             optional<unsigned> width = get_opt_attr<unsigned>(sym, "width"); 
             optional<unsigned> height = get_opt_attr<unsigned>(sym, "height"); 

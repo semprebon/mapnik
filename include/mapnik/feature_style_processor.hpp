@@ -102,6 +102,11 @@ namespace mapnik
             p.end_map_processing(m_);
          }	
       private:
+	     // adjust the value up/downward slightly to catch borderline objects
+	     double tweak(double v, int sign) {
+			double tweak_amount = 0.001 * ((sign * v) > 0 ? 1.0 : -1.0); 
+			return v * (1.0 + tweak_amount);
+		 }
          void apply_to_layer(Layer const& lay, Processor & p, 
                              projection const& proj0,double scale_denom)
          {
@@ -112,22 +117,36 @@ namespace mapnik
                Envelope<double> ext = m_.get_buffered_extent();
                projection proj1(lay.srs());
                proj_transform prj_trans(proj0,proj1);
-               
+               bool ok0, ok1;
+
                Envelope<double> layer_ext = lay.envelope();
+
                double lx0 = layer_ext.minx();
                double ly0 = layer_ext.miny();
                double lz0 = 0.0;
                double lx1 = layer_ext.maxx();
                double ly1 = layer_ext.maxy();
                double lz1 = 0.0;
+
                // back project layers extent into main map projection
-               prj_trans.backward(lx0,ly0,lz0);
-               prj_trans.backward(lx1,ly1,lz1);
-               
+               ok0 = prj_trans.backward(lx0,ly0,lz0);
+               if (!ok0)
+               {
+                   lx0 = ext.minx();
+                   ly0 = ext.miny();
+               }
+               ok1 = prj_trans.backward(lx1,ly1,lz1);
+               if (!ok1)
+               {
+                   lx1 = ext.maxx();
+                   ly1 = ext.maxy();
+               }
+
                // if no intersection then nothing to do for layer
                if ( lx0 > ext.maxx() || lx1 < ext.minx() || ly0 > ext.maxy() || ly1 < ext.miny() )
                {
-                  return;
+                   std::clog << "Layer outside bounds of map";
+                   return;
                }
                
                // clip query bbox
@@ -135,10 +154,18 @@ namespace mapnik
                ly0 = std::max(ext.miny(),ly0);
                lx1 = std::min(ext.maxx(),lx1);
                ly1 = std::min(ext.maxy(),ly1);
-               
-               prj_trans.forward(lx0,ly0,lz0);
-               prj_trans.forward(lx1,ly1,lz1);
-               Envelope<double> bbox(lx0,ly0,lx1,ly1);
+
+               ok0 = prj_trans.forward(lx0,ly0,lz0);
+               ok1 = prj_trans.forward(lx1,ly1,lz1);
+               if (!ok0) {  
+                   lx0 = layer_ext.minx();
+                   ly0 = layer_ext.miny();
+               }
+               if (!ok1) {
+                   lx1 = layer_ext.maxx();
+                   ly1 = layer_ext.maxy();
+               }
+               Envelope<double> bbox(tweak(lx0,-1),tweak(ly0,-1),tweak(lx1, 1),tweak(ly1,1));
                
                double resolution = m_.getWidth()/bbox.width();
                query q(bbox,resolution); //BBOX query
@@ -212,7 +239,7 @@ namespace mapnik
                                     boost::apply_visitor
                                        (symbol_dispatch(p,*feature,prj_trans),*symIter);
                                  }
-                              }			    
+							  }			    
                            }
                            if (do_else)
                            {
@@ -233,7 +260,7 @@ namespace mapnik
                                        (symbol_dispatch(p,*feature,prj_trans),*symIter);
                                  }
                               }
-                           }	  
+                           }
                         }
                      }
                   }

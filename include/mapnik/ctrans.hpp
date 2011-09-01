@@ -30,6 +30,7 @@
 #include <mapnik/envelope.hpp>
 #include <mapnik/coord_array.hpp>
 #include <mapnik/proj_transform.hpp>
+#include <mapnik/vertex.hpp>
 
 namespace mapnik {
    typedef coord_array<coord2d> CoordinateArray;
@@ -69,9 +70,23 @@ namespace mapnik {
         
       unsigned  vertex(double * x , double  * y) const
       {
-         unsigned command = geom_.vertex(x,y);
-         double z=0;
-         prj_trans_.backward(*x,*y,z);
+         unsigned command;
+         bool ok = false;
+         bool skipped_points = false;
+         while (!ok)
+         {
+            command = geom_.vertex(x,y);
+            double z=0;
+            ok = prj_trans_.backward(*x,*y,z);
+            if (!ok) {
+                skipped_points = true;
+            }
+            ok = ok || (command == SEG_END);
+         }
+         if (skipped_points && command == SEG_LINETO)
+         {
+             command == SEG_MOVETO;
+         }
          t_.forward(x,y);
          return command;
       }

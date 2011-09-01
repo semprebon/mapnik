@@ -54,7 +54,9 @@ namespace mapnik {
          {
             delete [] data_;
          }
-    
+
+		cairo_pattern(const Cairo::RefPtr<Cairo::ImageSurface> & surface); 
+
          void set_matrix(Cairo::Matrix const& matrix)
          {
             pattern_->set_matrix(matrix);

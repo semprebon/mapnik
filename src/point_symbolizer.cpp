@@ -44,9 +44,10 @@ namespace mapnik
     
     point_symbolizer::point_symbolizer(std::string const& file,
                                        std::string const& type,
-                                       unsigned width,unsigned height) 
+                                       unsigned width,unsigned height,
+						               float opacity) 
         : symbolizer_with_image(file, type, width, height),
-          opacity_(1.0),      
+          opacity_(opacity),
           overlap_(false)
     {}
     

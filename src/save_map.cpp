@@ -52,7 +52,8 @@ namespace mapnik
             {
                 ptree & sym_node = rule_.push_back(
                         ptree::value_type("PointSymbolizer", ptree()))->second;
-
+                point_symbolizer dfl;
+                
                 add_image_attributes( sym_node, sym );
             }
 

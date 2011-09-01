@@ -41,6 +41,8 @@
 #include <boost/utility.hpp>
 #include <boost/tuple/tuple.hpp>
 
+#include <iostream>
+
 // stl
 #ifdef MAPNIK_DEBUG
 #include <iostream>
@@ -76,6 +78,13 @@ namespace mapnik
         pattern_ = Cairo::SurfacePattern::create(surface_);
     }
 
+    cairo_pattern::cairo_pattern(const Cairo::RefPtr<Cairo::ImageSurface> & surface) 
+    {
+	  	surface_ = surface;
+	   	pattern_ = Cairo::SurfacePattern::create(surface_);
+	   	data_ = NULL;
+	}
+	         
    class cairo_face : private boost::noncopyable
    {
       public:
@@ -416,6 +425,17 @@ namespace mapnik
             }
          }
 
+         bool in_clip(double x, double y) {
+             double x0, y0, x1, y1;
+             context_->get_clip_extents(x0, y0, x1, y1);
+             return (x0 <= x && x <= x1) && (y0 <= y && y <= y1);
+         }
+
+         bool in_clip(double minx, double miny, double maxx, double maxy) {
+             double x0, y0, x1, y1;
+             context_->get_clip_extents(x0, y0, x1, y1);
+             return (x0 <= maxx && minx <= x1) && (y0 <= maxy && miny <= y1);
+         }
 
       private:
          Cairo::RefPtr<Cairo::Context> context_;
